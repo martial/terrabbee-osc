@@ -27,7 +27,10 @@ class Evo_Mini(object):
             if portname is None:
                 print("Sensor not found. Please Check connections.")
                 exit()
-        self.portname = sys.argv[1]
+                
+        self.portname = portname
+        if(len(sys.argv) >=1 ):
+            self.portname = sys.argv[1]
         self.baudrate = 115200
 
         # Configure the serial connections
