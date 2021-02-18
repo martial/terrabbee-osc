@@ -29,7 +29,7 @@ class Evo_Mini(object):
                 exit()
                 
         self.portname = portname
-        if(len(sys.argv) >=1 ):
+        if(len(sys.argv) > 1 ):
             self.portname = sys.argv[1]
         self.baudrate = 115200
 
@@ -153,7 +153,7 @@ class Evo_Mini(object):
         while ranges is not None:
             ranges = self.get_ranges()
             
-            client.send_message("/" + sys.argv[2], ranges[0])
+            client.send_message("/range", ranges[0])
             print(ranges)
             print("sending")
         else:
