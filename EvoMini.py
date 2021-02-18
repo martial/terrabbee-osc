@@ -4,6 +4,7 @@ import serial
 import crcmod.predefined
 import serial.tools.list_ports
 import threading
+import argparse
 
 from pythonosc import udp_client
 import sys
@@ -29,8 +30,6 @@ class Evo_Mini(object):
                 exit()
                 
         self.portname = portname
-        if(len(sys.argv) > 1 ):
-            self.portname = sys.argv[1]
         self.baudrate = 115200
 
         # Configure the serial connections
@@ -133,7 +132,7 @@ class Evo_Mini(object):
         if self.send_command(Evo_Mini.LONG_RANGE_MODE):
             print("Sensor succesfully switched to long range measurement")
 
-    def run(self):
+    def run(self, ip, port, address):
         self.port.flushInput()
         self.set_binary_mode()  # Set binary output as it is required for this sample
 
@@ -146,24 +145,29 @@ class Evo_Mini(object):
         #self.set_two_pixel_mode()
         #self.set_two_by_two_pixel_mode()
         
-        client = udp_client.SimpleUDPClient("192.168.1.14", 5005)
+        client = udp_client.SimpleUDPClient(ip, port)
 
 
         ranges = []
         while ranges is not None:
             ranges = self.get_ranges()
             
-            client.send_message("/range", ranges[0])
+            client.send_message("/"+address, ranges[0])
             print(ranges)
-            print("sending")
+            print("sending to " + ip)
         else:
             print("No data from sensor")
 
 
 if __name__ == '__main__':
 
-    print ("The script has the name %s" % (sys.argv[0]))
-    arguments = len(sys.argv) - 1
-    print ("The script is called with %i arguments" % (arguments))
-    sensor = Evo_Mini()
-    sensor.run()
+    parser = argparse.ArgumentParser(description='Captor sensor to OCC')
+    parser.add_argument('--portname', type=str, help='If set, force the USB port for the sensor')
+    parser.add_argument('--ip', default="127.0.0.1", type=str, help='OSC IP to send to')
+    parser.add_argument('--port', default=5005, type=int, help='OSC port')
+    parser.add_argument('--address', default="range", type=str, help='OSC address to send to')
+
+    args = parser.parse_args()
+    print(args.portname)
+    sensor = Evo_Mini(args.portname)
+    sensor.run(args.ip,args.port, args.address)
