@@ -5,6 +5,7 @@ import crcmod.predefined
 import serial.tools.list_ports
 import threading
 import argparse
+import math
 
 from pythonosc import udp_client
 import sys
@@ -146,15 +147,20 @@ class Evo_Mini(object):
         #self.set_two_by_two_pixel_mode()
         
         client = udp_client.SimpleUDPClient(ip, port)
-
-
+        
+        blurRate = 0.95
+        smoothed = 0.0
         ranges = []
         while ranges is not None:
             ranges = self.get_ranges()
             
-            client.send_message("/"+address, ranges[0])
-            print(ranges)
-            print("sending to " + ip)
+            val = ranges[0]
+            if (not math.isnan(val) and not math.isinf(val)):
+                smoothed = blurRate * smoothed +  (1.0 - blurRate) * val;
+            
+            pct = smoothed / 3.3
+            client.send_message("/"+address, pct)
+            print("sending to " + ip + " " + str(pct))
         else:
             print("No data from sensor")
 
