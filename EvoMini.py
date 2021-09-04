@@ -135,14 +135,14 @@ class Evo_Mini(object):
 
     def run(self, ip, port, address):
         self.port.flushInput()
-        self.set_binary_mode()  # Set binary output as it is required for this sample
+        #self.set_binary_mode()  # Set binary output as it is required for this sample
 
         # Set ranging mode
-        self.set_long_range_mode()
+        #self.set_long_range_mode()
         #self.set_short_range_mode()
 
         # Set pixel mode
-        self.set_single_pixel_mode()
+        #self.set_single_pixel_mode()
         #self.set_two_pixel_mode()
         #self.set_two_by_two_pixel_mode()
         
@@ -158,7 +158,7 @@ class Evo_Mini(object):
             if (not math.isnan(val) and not math.isinf(val)):
                 smoothed = blurRate * smoothed +  (1.0 - blurRate) * val;
             
-            pct = smoothed / 3.3
+            pct = smoothed
             client.send_message("/"+address, pct)
             print("sending to " + ip + " " + str(pct))
         else:
