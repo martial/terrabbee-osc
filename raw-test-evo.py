@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 ###### TeraRanger Evo Example Code STD #######
 #                                            #
@@ -9,11 +10,7 @@ import serial
 import serial.tools.list_ports
 import sys
 import crcmod.predefined  # To install: pip install crcmod
-import argparse
-import math
 
-from pythonosc import udp_client
-import sys
 
 def findEvo():
     # Find Live Ports, return port name if found, NULL if not
@@ -63,11 +60,11 @@ def get_evo_range(evo_serial):
 
     # Checking error codes
     if rng == 65535: # Sensor measuring above its maximum limit
-        dec_out = 65535.0
+        dec_out = float('inf')
     elif rng == 1: # Sensor not able to measure
-        dec_out = 0.0
+        dec_out = float('nan')
     elif rng == 0: # Sensor detecting object below minimum range
-        dec_out = 0.0
+        dec_out = -float('inf')
     else:
         # Convert frame in meters
         dec_out = rng / 1000.0
@@ -77,19 +74,8 @@ def get_evo_range(evo_serial):
 if __name__ == "__main__":
 
     print('Starting Evo data streaming')
-    
-    parser = argparse.ArgumentParser(description='Captor sensor to OCC')
-    parser.add_argument('--ip', default="127.0.0.1", type=str, help='OSC IP to send to')
-    parser.add_argument('--port', default=5005, type=int, help='OSC port')
-    parser.add_argument('--address', default="range", type=str, help='OSC address to send to')
-
-    args = parser.parse_args()
-    
-    
     # Get the port the evo has been connected to
     port = findEvo()
-    
-    client = udp_client.SimpleUDPClient(args.ip, args.port)
 
     if port == 'NULL':
         print("Sorry couldn't find the Evo. Exiting.")
@@ -99,12 +85,7 @@ if __name__ == "__main__":
 
     while True:
         try:
-            val = get_evo_range(evo)
-           
-            if (isinstance(val, float)):
-                print("sending to " + args.ip + " " + str(val))
-                client.send_message("/"+args.address, val)
-
+            print(get_evo_range(evo))
         except serial.serialutil.SerialException:
             print("Device disconnected (or multiple access on port). Exiting...")
             break

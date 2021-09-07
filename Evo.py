@@ -57,14 +57,14 @@ def get_evo_range(evo_serial):
             rng = frame[1] << 8
             rng = rng | (frame[2] & 0xFF)
         else:
-            return "CRC mismatch. Check connection or make sure only one progam access the sensor port."
+            return float('nan')
     # Check special cases (limit values)
     else:
-        return "Wating for frame header"
+        return float('nan')
 
     # Checking error codes
     if rng == 65535: # Sensor measuring above its maximum limit
-        dec_out = float('nan')
+        dec_out = -1
     elif rng == 1: # Sensor not able to measure
         dec_out = float('nan')
     elif rng == 0: # Sensor detecting object below minimum range
@@ -92,16 +92,24 @@ def run(args):
     running = True;
     while running:
         try:
-            range = get_evo_range(evo)
-            if ( math.isnan(range)):
-                range = smoothed
-           
-            smoothed = blurRate * smoothed +  (1.0 - blurRate) * range;
-                
-            client.send_message("/"+args.address, smoothed)
-            print("sending to " + args.ip + " " + str(smoothed))
+            range = float(get_evo_range(evo))
             
-        except :
+            if range == -1:
+                client.send_message("/"+args.address, range)
+                print("sending to " + args.ip + " " + str(smoothed))
+
+            else:
+            
+                if ( math.isnan(range)):
+                    range = smoothed
+           
+                smoothed = blurRate * smoothed +  (1.0 - blurRate) * range;
+                    
+                client.send_message("/"+args.address, smoothed)
+                print("sending to " + args.ip + " " + str(smoothed))
+            
+        except Exception as e:
+            print(e)
             print("Error.. try to start again")
             time.sleep(1.0)
             print("Trying")
